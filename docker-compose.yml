@@ -1,0 +1,71 @@
+version: '2'
+services:
+
+  ## Config Servers
+  config01:
+    image: mongo
+    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --dbpath /data/config01/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  config02:
+    image: mongo
+    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --dbpath /data/config02/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+      - ./data:/data
+  config03:
+    image: mongo
+    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --dbpath /data/config03/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+
+  ## Shards
+  shard01a:
+    image: mongo
+    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --dbpath /data/shard01a/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  shard01b:
+    image: mongo
+    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --dbpath /data/shard01b/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  shard02a:
+    image: mongo
+    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --dbpath /data/shard02a/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  shard02b:
+    image: mongo
+    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --dbpath /data/shard02b/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  shard03a:
+    image: mongo
+    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --dbpath /data/shard03a/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+  shard03b:
+    image: mongo
+    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --dbpath /data/shard03b/db --oplogSize 16
+    volumes:
+      - ./scripts:/scripts
+
+  ## Router
+  router:
+    image: mongo
+    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./scripts:/scripts
+    depends_on:
+      - config01
+      - config02
+      - config03
+      - shard01a
+      - shard01b
+      - shard02a
+      - shard02b
+      - shard03a
+      - shard03b
