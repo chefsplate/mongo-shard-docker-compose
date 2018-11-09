@@ -53,7 +53,7 @@ services:
   ## Router
   router:
     image: mongo
-    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017
+    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
     ports:
       - "27017:27017"
     volumes:
