@@ -16,6 +16,8 @@ Heavily inspired by [https://github.com/jfollenfant/mongodb-sharding-docker-comp
 * 1 Router (mongos): `router`
 * (TODO): DB data persistence using docker data volumes
 
+*all mongod/mongos instances are running mongodb version 4.2*
+
 ### First Run (initial setup)
 **Start all of the containers** (daemonized)
 
