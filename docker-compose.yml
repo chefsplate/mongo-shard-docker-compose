@@ -1,63 +1,103 @@
-version: '2'
+version: '3'
 services:
 
   ## Config Servers
   config01:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27017 --configsvr --replSet configserver
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/config01:/data/configdb
   config02:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27017 --configsvr --replSet configserver
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/config02:/data/configdb
   config03:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27017 --configsvr --replSet configserver
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/config03:/data/configdb
 
   ## Shards
   shard01a:
-    image: mongo
-    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27018 --shardsvr --replSet shard01
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27018", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard01a:/data/db
   shard01b:
-    image: mongo
-    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27018 --shardsvr --replSet shard01
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27018", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard01b:/data/db
   shard02a:
-    image: mongo
-    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27019 --shardsvr --replSet shard02
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27019", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard02a:/data/db
   shard02b:
-    image: mongo
-    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27019 --shardsvr --replSet shard02
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27019", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard02b:/data/db
   shard03a:
-    image: mongo
-    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27020 --shardsvr --replSet shard03
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27020", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard03a:/data/db
   shard03b:
-    image: mongo
-    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --oplogSize 16
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongod --port 27020 --shardsvr --replSet shard03
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--port", "27020", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     volumes:
       - ./scripts:/scripts
+      - ./data/shard03b:/data/db
 
   ## Router
   router:
-    image: mongo
-    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
+    image: "mongo:${MONGO_TAG:-latest}"
+    command: mongos --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
     ports:
       - "27017:27017"
     volumes:
       - ./scripts:/scripts
+      - ./data/router:/data/db
     depends_on:
       - config01
       - config02
