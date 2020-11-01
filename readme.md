@@ -14,7 +14,7 @@ Heavily inspired by [https://github.com/jfollenfant/mongodb-sharding-docker-comp
 	* `shard02a`,`shard02b`
 	* `shard03a`,`shard03b`
 * 1 Router (mongos): `router`
-* (TODO): DB data persistence using docker data volumes
+* DB data persistence using docker data volumes
 
 ### First Run (initial setup)
 **Start all of the containers** (daemonized)
@@ -29,7 +29,7 @@ docker-compose up -d
 sh init.sh
 ```
 
-This script has a `sleep 20` to wait for the config server and shards to elect their primaries before initializing the router
+This script has a `sleep 30` to wait for the config server and shards to elect their primaries before initializing the router
 
 **Verify the status of the sharded cluster**
 
@@ -38,27 +38,27 @@ docker-compose exec router mongo
 mongos> sh.status()
 --- Sharding Status ---
   sharding version: {
-	"_id" : 1,
-	"minCompatibleVersion" : 5,
-	"currentVersion" : 6,
-	"clusterId" : ObjectId("5981df064c97b126d0e5aa0e")
-}
+        "_id" : 1,
+        "minCompatibleVersion" : 5,
+        "currentVersion" : 6,
+        "clusterId" : ObjectId("5f9ed6997834a5dd92847d1b")
+  }
   shards:
-	{  "_id" : "shard01",  "host" : "shard01/shard01a:27018,shard01b:27018",  "state" : 1 }
-	{  "_id" : "shard02",  "host" : "shard02/shard02a:27019,shard02b:27019",  "state" : 1 }
-	{  "_id" : "shard03",  "host" : "shard03/shard03a:27020,shard03b:27020",  "state" : 1 }
+        {  "_id" : "shard01",  "host" : "shard01/shard01a:27018,shard01b:27018",  "state" : 1 }
+        {  "_id" : "shard02",  "host" : "shard02/shard02a:27019,shard02b:27019",  "state" : 1 }
+        {  "_id" : "shard03",  "host" : "shard03/shard03a:27020,shard03b:27020",  "state" : 1 }
   active mongoses:
-	"3.4.6" : 1
- autosplit:
-	Currently enabled: yes
+        "4.4.1" : 1
+  autosplit:
+        Currently enabled: yes
   balancer:
-	Currently enabled:  yes
-	Currently running:  no
-		Balancer lock taken at Wed Aug 02 2017 14:17:42 GMT+0000 (UTC) by ConfigServer:Balancer
-	Failed balancer rounds in last 5 attempts:  0
-	Migration Results for the last 24 hours:
-		No recent migrations
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  0
+        Migration Results for the last 24 hours:
+                No recent migrations
   databases:
+        {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
 ```
 
 ### Normal Startup
@@ -72,10 +72,11 @@ docker-compose exec router mongo
 ```
 
 ### Resetting the Cluster
-To remove all data and re-initialize the cluster, make sure the containers are stopped and then:
+To remove all data and re-initialize the cluster, make sure the containers are stopped and remove persisted data:
 
 ```
-docker-compose rm
+docker-compose down
+sudo rm -rf data/*
 ```
 
 Execute the **First Run** instructions again.
