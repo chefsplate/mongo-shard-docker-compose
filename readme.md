@@ -9,10 +9,10 @@ Heavily inspired by [https://github.com/jfollenfant/mongodb-sharding-docker-comp
 ### Mongo Components
 
 * Config Server (3 member replica set): `config01`,`config02`,`config03`
-* 3 Shards (each a 2 member replica set):
-	* `shard01a`,`shard01b`
-	* `shard02a`,`shard02b`
-	* `shard03a`,`shard03b`
+* 3 Shards (each a 3 member replica set):
+	* `shard01a`,`shard01b`, `shard01c`
+	* `shard02a`,`shard02b`, `shard02c`
+	* `shard03a`,`shard03b`, `shard03c`
 * 1 Router (mongos): `router`
 * (TODO): DB data persistence using docker data volumes
 
@@ -23,16 +23,38 @@ Heavily inspired by [https://github.com/jfollenfant/mongodb-sharding-docker-comp
 docker-compose up -d
 ```
 
-**Initialize the replica sets (config server and shards) and router**
+**Initialize the replica sets (config server and shards) and routers : run sh/bat or simply the python scirpt**
 
 ```
 sh init.sh
 ```
+```
+init.bat
+```
+```
+python3 script.py
+```
 
 This script has a `sleep 20` to wait for the config server and shards to elect their primaries before initializing the router
 
-**Verify the status of the sharded cluster**
+**Run tests.py to verify the cluster status or sh.status() in one of the router**
 
+```
+python3 tests.py
+### --- Read collection --- ###
+{'_id': ObjectId('65521f767b02d5dff9b1f29c'), 'nom': 'Alice', 'âge': 20, 'note': 'A', 'matieres': ['Mathematiques', 'Science', 'Histoire']}
+{'_id': ObjectId('65521f767b02d5dff9b1f29d'), 'nom': 'Bob', 'âge': 22, 'note': 'B', 'matieres': ['Mathematiques', 'Anglais']}
+{'_id': ObjectId('65521f767b02d5dff9b1f29e'), 'nom': 'Charlie', 'âge': 21, 'note': 'A', 'matieres': ['Science', 'Histoire']}
+### --- Read Bob's information after the update --- ###
+{'_id': ObjectId('65521f767b02d5dff9b1f29c'), 'nom': 'Alice', 'âge': 20, 'note': 'A', 'matieres': ['Mathematiques', 'Science', 'Histoire']}
+{'_id': ObjectId('65521f767b02d5dff9b1f29d'), 'nom': 'Bob', 'âge': 22, 'note': 'A', 'matieres': ['Mathematiques', 'Anglais']}
+{'_id': ObjectId('65521f767b02d5dff9b1f29e'), 'nom': 'Charlie', 'âge': 21, 'note': 'A', 'matieres': ['Science', 'Histoire']}
+### --- On recupere les informations sur les shards avec la commande sh.status() --- ###
+{'_id': 'shard01', 'host': 'shard01/shard01a:27018,shard01b:27018,shard01c:27018', 'state': 1, 'topologyTime': Timestamp(1699880766, 2)}
+{'_id': 'shard02', 'host': 'shard02/shard02a:27019,shard02b:27019,shard02c:27019', 'state': 1, 'topologyTime': Timestamp(1699880766, 6)}
+{'_id': 'shard03', 'host': 'shard03/shard03a:27020,shard03b:27020,shard03c:27020', 'state': 1, 'topologyTime': Timestamp(1699880767, 5)}
+```
+```
 ```
 docker-compose exec router mongo
 mongos> sh.status()
@@ -59,6 +81,7 @@ mongos> sh.status()
 	Migration Results for the last 24 hours:
 		No recent migrations
   databases:
+```
 ```
 
 ### Normal Startup

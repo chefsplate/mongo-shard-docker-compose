@@ -1,5 +1,3 @@
-#!/bin/bash
-
 
 docker-compose exec config01 sh -c "mongosh --port 27017 < /scripts/init-configserver.js"
 
@@ -13,10 +11,10 @@ docker-compose exec shard02a sh -c "mongosh --port 27017 < /scripts/init-shard02
 docker-compose exec shard03a sh -c "mongosh --port 27017 < /scripts/init-shard03.js"
 
 
-echo "WAIT 20s : CONFIGURATION OF THE REPLICATS"
-
-
-sleep 20
+@echo off
+echo WAIT 20s : CONFIGURATION OF THE REPLICATS 
+timeout /t 20 /nobreak
+echo Fin de la pause
 
 
 docker-compose exec router sh -c "mongod"
