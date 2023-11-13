@@ -1,63 +1,16 @@
-version: '2'
+version: '3'
 services:
-
-  ## Config Servers
-  config01:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  config02:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  config03:
-    image: mongo
-    command: mongod --port 27017 --configsvr --replSet configserver --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-
-  ## Shards
-  shard01a:
-    image: mongo
-    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  shard01b:
-    image: mongo
-    command: mongod --port 27018 --shardsvr --replSet shard01 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  shard02a:
-    image: mongo
-    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  shard02b:
-    image: mongo
-    command: mongod --port 27019 --shardsvr --replSet shard02 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  shard03a:
-    image: mongo
-    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-  shard03b:
-    image: mongo
-    command: mongod --port 27020 --shardsvr --replSet shard03 --noprealloc --smallfiles --oplogSize 16
-    volumes:
-      - ./scripts:/scripts
-
   ## Router
   router:
-    image: mongo
+    image: mongo:latest
     command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
     ports:
-      - "27017:27017"
+      - 27017:27017
     volumes:
       - ./scripts:/scripts
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=MYUSERNAME
+    - MONGO_INITDB_ROOT_PASSWORD=MYPASSWORD
     depends_on:
       - config01
       - config02
@@ -68,3 +21,97 @@ services:
       - shard02b
       - shard03a
       - shard03b
+  router-replica:
+    image: mongo:latest
+    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
+    ports:
+      - 27018:27017
+    volumes:
+      - ./scripts:/scripts
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=MYUSERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=MYPASSWORD
+    links:
+      - router
+    depends_on:
+      - config01
+      - config02
+      - config03
+      - shard01a
+      - shard01b
+      - shard02a
+      - shard02b
+      - shard03a
+      - shard03b
+
+  ## Config Servers
+  config01:
+    image: mongo:latest
+    command: mongod --port 27017 --configsvr --replSet configserver
+    volumes:
+      - ./scripts:/scripts
+    ports:
+      - 27019:27017
+  config02:
+    image: mongo:latest
+    command: mongod --port 27017 --configsvr --replSet configserver
+    volumes:
+      - ./scripts:/scripts
+  config03:
+    image: mongo:latest
+    command: mongod --port 27017 --configsvr --replSet configserver
+    volumes:
+      - ./scripts:/scripts
+
+  ## Shards
+  shard01a:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard01
+    ports:
+      - 27020:27017
+    volumes:
+      - ./scripts:/scripts
+  shard01b:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard01
+    volumes:
+      - ./scripts:/scripts
+  shard01c:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard01
+    volumes:
+      - ./scripts:/scripts
+  shard02a:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard02
+    ports:
+      - 27021:27017
+    volumes:
+      - ./scripts:/scripts
+  shard02b:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard02
+    volumes:
+      - ./scripts:/scripts
+  shard02c:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard02
+    volumes:
+      - ./scripts:/scripts
+  shard03a:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard03
+    ports:
+      - 27022:27017
+    volumes:
+      - ./scripts:/scripts
+  shard03b:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard03
+    volumes:
+      - ./scripts:/scripts
+  shard03c:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet shard03
+    volumes:
+      - ./scripts:/scripts
